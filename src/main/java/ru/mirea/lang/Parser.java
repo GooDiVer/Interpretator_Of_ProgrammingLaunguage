@@ -1,7 +1,8 @@
 package ru.mirea.lang;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class Parser {
 
@@ -21,10 +22,10 @@ public class Parser {
         }
     }
 
-    private Token match(TokenType expected) {
+    private Token match(TokenType... expected) {
         if (pos < tokens.size()) {
             Token c = tokens.get(pos);
-            if (c.type == expected) {
+            if (Arrays.asList(expected).contains(c.type)) {
                 pos++;
                 return c;
             }
@@ -32,41 +33,64 @@ public class Parser {
         return null;
     }
 
-    private Token require(TokenType expected) {
+    private Token require(TokenType... expected) {
         Token t = match(expected);
         if (t == null)
-            error("Ожидается " + expected);
+            error("Ожидается " + Arrays.toString(expected));
         return t;
     }
 
-    public List<Token> parse() {
-        List<Token> numbers = new ArrayList<>();
-        Token n1 = require(TokenType.NUMBER);
-        numbers.add(n1);
-        while (pos < tokens.size()) {
-            require(TokenType.ADD);
-            Token n2 = require(TokenType.NUMBER);
-            numbers.add(n2);
-        }
-        return numbers;
+    private ExprNode parseElem() {
+        Token num = match(TokenType.NUMBER);
+        if (num != null)
+            return new NumberNode(num);
+        Token id = match(TokenType.ID);
+        if (id != null)
+            return new VarNode(id);
+        error("Ожидается число или переменная");
+        return null;
     }
 
-    public static int eval(List<Token> program) {
-        int sum = 0;
-        for (Token t : program) {
-            sum += Integer.parseInt(t.text);
+    public ExprNode parseExpression() {
+        ExprNode e1 = parseElem();
+        while (pos < tokens.size()) {
+            Token op = require(TokenType.ADD);
+            ExprNode e2 = parseElem();
+            e1 = new BinOpNode(op, e1, e2);
         }
-        return sum;
+        return e1;
+    }
+
+    public static int eval(ExprNode node) {
+        if (node instanceof NumberNode) {
+            NumberNode num = (NumberNode) node;
+            return Integer.parseInt(num.number.text);
+        } else if (node instanceof BinOpNode) {
+            BinOpNode binOp = (BinOpNode) node;
+            int l = eval(binOp.left);
+            int r = eval(binOp.right);
+            return l + r;
+        } else if (node instanceof VarNode) {
+            VarNode var = (VarNode) node;
+            System.out.println("Введите значение " + var.id.text + ":");
+            String line = new Scanner(System.in).nextLine();
+            return Integer.parseInt(line);
+        } else {
+            throw new IllegalStateException();
+        }
     }
 
     public static void main(String[] args) {
-        String text = "10 + 20";
+        String text = "10 + 20 + x";
+
         Lexer l = new Lexer(text);
         List<Token> tokens = l.lex();
         tokens.removeIf(t -> t.type == TokenType.SPACE);
+
         Parser p = new Parser(tokens);
-        List<Token> numbers = p.parse();
-        int result = eval(numbers);
+        ExprNode node = p.parseExpression();
+
+        int result = eval(node);
         System.out.println(result);
     }
 }

@@ -4,6 +4,7 @@ import java.util.regex.Pattern;
 
 public enum TokenType {
     NUMBER("[0-9]+"),
+    ID("[a-zA-Z_][a-zA-Z_0-9]*"),
     ADD("\\+"),
     SPACE("[ \t\r\n]+");
 
