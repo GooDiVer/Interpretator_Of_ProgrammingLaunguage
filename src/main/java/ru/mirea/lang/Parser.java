@@ -1,5 +1,10 @@
 package ru.mirea.lang;
 
+import ru.mirea.lang.ast.BinOpNode;
+import ru.mirea.lang.ast.ExprNode;
+import ru.mirea.lang.ast.NumberNode;
+import ru.mirea.lang.ast.VarNode;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;

@@ -1,8 +1,10 @@
-package ru.mirea.lang;
+package ru.mirea.lang.ast;
+
+import ru.mirea.lang.Token;
 
 public class VarNode extends ExprNode {
 
-    final Token id;
+    public final Token id;
 
     public VarNode(Token id) {
         this.id = id;

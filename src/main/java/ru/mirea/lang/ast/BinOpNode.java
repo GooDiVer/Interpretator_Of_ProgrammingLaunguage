@@ -1,10 +1,12 @@
-package ru.mirea.lang;
+package ru.mirea.lang.ast;
+
+import ru.mirea.lang.Token;
 
 public class BinOpNode extends ExprNode {
 
-    final Token op;
-    final ExprNode left;
-    final ExprNode right;
+    public final Token op;
+    public final ExprNode left;
+    public final ExprNode right;
 
     public BinOpNode(Token op, ExprNode left, ExprNode right) {
         this.op = op;

@@ -1,4 +1,4 @@
-package ru.mirea.lang;
+package ru.mirea.lang.ast;
 
 public abstract class ExprNode {
 
