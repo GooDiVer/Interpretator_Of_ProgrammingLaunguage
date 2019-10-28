@@ -7,4 +7,9 @@ public class VarNode extends ExprNode {
     public VarNode(Token id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return id.text;
+    }
 }
