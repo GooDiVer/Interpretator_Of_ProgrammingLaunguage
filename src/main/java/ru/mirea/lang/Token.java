@@ -11,4 +11,9 @@ public class Token {
         this.text = text;
         this.pos = pos;
     }
+
+    @Override
+    public String toString() {
+        return text;
+    }
 }

@@ -29,10 +29,10 @@ public class Parser {
 
     private Token match(TokenType... expected) {
         if (pos < tokens.size()) {
-            Token c = tokens.get(pos);
-            if (Arrays.asList(expected).contains(c.type)) {
+            Token curr = tokens.get(pos);
+            if (Arrays.asList(expected).contains(curr.type)) {
                 pos++;
-                return c;
+                return curr;
             }
         }
         return null;
@@ -56,11 +56,31 @@ public class Parser {
         return null;
     }
 
+    private ExprNode parseMnozh() {
+        if (match(TokenType.LPAR) != null) {
+            ExprNode e = parseExpression();
+            require(TokenType.RPAR);
+            return e;
+        } else {
+            return parseElem();
+        }
+    }
+
+    public ExprNode parseSlag() {
+        ExprNode e1 = parseMnozh();
+        Token op;
+        while ((op = match(TokenType.MUL, TokenType.DIV)) != null) {
+            ExprNode e2 = parseMnozh();
+            e1 = new BinOpNode(op, e1, e2);
+        }
+        return e1;
+    }
+
     public ExprNode parseExpression() {
-        ExprNode e1 = parseElem();
-        while (pos < tokens.size()) {
-            Token op = require(TokenType.ADD);
-            ExprNode e2 = parseElem();
+        ExprNode e1 = parseSlag();
+        Token op;
+        while ((op = match(TokenType.ADD, TokenType.SUB)) != null) {
+            ExprNode e2 = parseSlag();
             e1 = new BinOpNode(op, e1, e2);
         }
         return e1;
@@ -74,19 +94,23 @@ public class Parser {
             BinOpNode binOp = (BinOpNode) node;
             int l = eval(binOp.left);
             int r = eval(binOp.right);
-            return l + r;
+            switch (binOp.op.type) {
+            case ADD: return l + r;
+            case SUB: return l - r;
+            case MUL: return l * r;
+            case DIV: return l / r;
+            }
         } else if (node instanceof VarNode) {
             VarNode var = (VarNode) node;
             System.out.println("Введите значение " + var.id.text + ":");
             String line = new Scanner(System.in).nextLine();
             return Integer.parseInt(line);
-        } else {
-            throw new IllegalStateException();
         }
+        throw new IllegalStateException();
     }
 
     public static void main(String[] args) {
-        String text = "10 + 20 + x";
+        String text = "10 + 20 * (3 + 1)";
 
         Lexer l = new Lexer(text);
         List<Token> tokens = l.lex();
