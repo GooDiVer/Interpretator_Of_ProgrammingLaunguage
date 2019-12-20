@@ -8,6 +8,8 @@ public class Lexer {
 
     private final String src;
     private int pos = 0;
+    private int row = 1;
+    private int column = 1;
     private final List<Token> tokens = new ArrayList<>();
 
     public Lexer(String src) {
@@ -17,13 +19,22 @@ public class Lexer {
     private boolean nextToken() {
         if (pos >= src.length())
             return false;
+
         for (TokenType tt : TokenType.values()) {
             Matcher m = tt.pattern.matcher(src);
             m.region(pos, src.length());
             if (m.lookingAt()) {
-                Token t = new Token(tt, m.group(), pos);
+                Token t = new Token(tt, m.group(), pos, row, column);
                 tokens.add(t);
                 pos = m.end();
+
+                if (tt == TokenType.ENDL) {
+                    row++;
+                    column = 1;
+                }
+                else
+                    column += m.group().length();
+
                 return true;
             }
         }
@@ -38,11 +49,14 @@ public class Lexer {
     }
 
     public static void main(String[] args) {
-        String text = "10 + 20";
+        String text = "x := true;\n" +
+                "y := not y;\n" +
+                "print y;\n" +
+                "z := (x and y) or not true;\n";
         Lexer l = new Lexer(text);
         List<Token> tokens = l.lex();
         for (Token t : tokens) {
-            System.out.println(t.type + " " + t.text);
+            System.out.println(t.type + " " + t.text + " " + t.row + " " + t.column);
         }
     }
 }
